@@ -1,0 +1,15 @@
+version: '3'
+services:
+  nudebox1:
+    image: machinebox/nudebox
+    environment:
+      - MB_KEY=${MB_KEY}
+    ports:
+      - "8081:8080"
+  videobox:
+    image: machinebox/videobox
+    environment:
+      - MB_KEY=${MB_KEY}
+      - MB_VIDEOBOX_NUDEBOX_ADDR=http://nudebox1:8080
+    ports:
+      - "8080:8080"
