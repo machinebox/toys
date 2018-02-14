@@ -1,0 +1,129 @@
+<html>
+<head>
+	<title>face-verify.js by Machine Box</title>
+	<link rel='stylesheet' href='https://machinebox.io/assets/shared/static/semantic/semantic.min.css'>
+	<link rel='stylesheet' href='https://machinebox.io/assets/shared/static/css/main.css?cb=v1.407445687013758950'>
+	<style>
+		#facePreview {
+			width: 100%;
+			float: right;
+		}
+	</style>
+</head>
+<body>
+	<div class='ui container'>
+		<div class='ui header stackable grid'>
+			<div class='five wide mobile-hide column'>
+				<a href='http://machinebox.io/'>
+					<img class='main logo' src='https://machinebox.io/assets/shared/static/img/machineboxlogo.svg?cb=v1.407445687013758950'>
+				</a>
+			</div>
+		</div>
+	</div>
+	<div class='ui container'>
+		<div class='ui grid'>
+			<div class='twelve wide column'>
+				<div class='ui segment'>
+					<h2>
+						Face Verify
+					</h2>
+					<p>
+						Face verification works by using the webcam to monitor who is using a 
+						website. If it's not the expected person, the secure content can be hidden.
+						If multiple people are looking at the screen, this could be considered a security
+						risk, and the secret content can be hidden.
+					</p>
+					<div class='ui divider'></div>
+					<h4>Secure content</h4>
+					<div class='ui secure message' style='background-color: black;'>
+						<p>
+							This content is secure, and will only be visible when a single person, known to
+							Facebox is looking at the screen. In this demo, we are only changing the background color
+							of this element, in the real world you could take more serious steps to ensure
+							content is secure.
+						</p>
+					</div>
+					<p>
+						<strong>Can't see anything?</strong> Make sure you have taught your face to Facebox,
+						and there is nobody else looking at the screen.
+					</p>
+					<div class='ui divider'></div>
+					<h3>
+						How to run this demo
+					</h3>
+					<p>
+						To run this demo, make sure Facebox is running on <code>http://localhost:8080</code>.
+						You can do this by running the following command in a terminal:
+					</p>
+					<pre><code>docker run -p 8080:8080 -e "MB_KEY=$MB_KEY" machinebox/facebox</code></pre>
+					<p>
+						You can grab a free <code>MB_KEY</code> from the <a href='https://machinebox.io/account'>Machine Box website</a>.
+					</p>
+					<p>
+						Once Facebox is running, go to <a href='http://localhost:8080'>http://localhost:8080</a> and teach
+						Facebox with your profile picture.
+					</p>
+					<h3>
+						How it works
+					</h3>
+					<p>
+						The webcam stream is used to take a snapshot at regular intervals. The snapshots are sent to
+						Facebox for analysis. If Facebox doesn't recognize the person, or if there are multuple faces
+						detected, the secure content is hidden.
+					</p>
+				</div>
+			</div>
+			<div class='four wide column'>
+				<div class='ui fluid card'>
+					<div class='image'>
+						<video id='facePreview' autoplay></video>
+					</div>
+					<div class='content'>
+						<div class='header'>
+							Face Verify
+						</div>
+						<div class='description'>
+							<span class='status'>Please wait...</span>
+							<div class='ui error message' style='display:none'></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 
+
+		Note to devs:
+			jQuery isn't required for face-verify to work, we just use it on this
+			page because we like it. You can use whatever you like.
+
+	-->
+	<script src="http://code.jquery.com/jquery-3.3.1.min.js"
+			integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+			crossorigin="anonymous"></script>
+	<script src='face-verify.js'></script>
+	<script>
+		var fv = new machinebox.FaceVerify({
+			facebox: "http://localhost:8080",
+			videoSelector: '#facePreview',
+			snapshotInterval: 1000,
+			error: function(error) {
+				if (!error) {
+					$('.ui.error.message').hide()
+					return
+				}
+				$('.ui.error.message').text(error).show()
+			},
+			onSecure: function(name){
+				$('.status').text("Hello "+name)
+				$('.secure').css({backgroundColor:'white'})
+			},
+			onInsecure: function(message){
+				$('.status').text(message)
+				$('.secure').css({backgroundColor:'black'})
+			},
+		})
+		fv.start()
+	</script>
+</body>
+</html>
