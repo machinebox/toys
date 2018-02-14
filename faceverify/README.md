@@ -1,6 +1,6 @@
 # Face Verify
 
-* Uses the web cam to ensure only authorized people are looking at the website
+* Uses the webcam to ensure only authorized people are looking at the website
 * Automatically hides sensitive information
 * Hides information if multiple people are looking at the screen
 
