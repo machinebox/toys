@@ -1,3 +1,5 @@
+![](machine-box-white-small.png)
+
 # Machine Box Toys
 
 Tools, scripts, toys, and utilities for Machine Box
