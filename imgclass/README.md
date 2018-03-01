@@ -4,7 +4,7 @@ Image classification tool for Classificationbox.
 
 ## Usage
 
-1. Prepare traching images
+1. Prepare teaching images
 1. Run Classificationbox
 1. Teach and test
 
