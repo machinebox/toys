@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Celeb match by Machine Box</title>
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+		}
+
+		#screen {
+			width: 100%;
+			height: 100%;
+			position: absolute;
+		}
+
+		#overlay {
+			width: 100%;
+			height: 100%;
+			position: absolute;
+		}
+
+		#overlay .face {
+			position: absolute;
+			border-radius: 50%;
+			border: 10px black solid;
+			z-index: 1000;
+			text-align: center;
+		}
+
+		#pool {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<div id='overlay'></div>
+	<div id='pool'></div>
+	<video id='screen' autoplay></video>
+	<script src="http://code.jquery.com/jquery-3.3.1.min.js"
+		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+		crossorigin="anonymous"></script>
+	<script>
+
+		$(function(){
+
+			var snapshotInterval = 500
+			var video = $('#screen')[0]
+			var actualVideoWidth = $('#screen').width()
+			var actualVideoHeight = $('#screen').height()
+			var pool = $('#pool')
+			var canvas = document.createElement('canvas')
+			var overlay = $('#overlay')
+
+			function getDivFromPool() {
+				return pool.find('.face').first()
+			}
+
+			function snapshot() {
+
+				var widthRatio = actualVideoWidth/video.videoWidth
+				var heightRatio = actualVideoHeight/video.videoHeight
+				if (widthRatio === Infinity) { 
+					setTimeout(snapshot, snapshotInterval);
+					return
+				}
+
+				$.ajax({
+					method: 'post',
+					url: 'http://localhost:8080/facebox/check',
+					contentType: 'application/json;charset=UTF-8',
+					data: JSON.stringify({"base64":getBase64Snapshot()}),
+					success: function(results){
+						$('.face').text('').appendTo(pool)
+						if (!results.success) { return }
+						for (var i in results.faces) {
+							var face = results.faces[i]
+							var div = getDivFromPool()
+							if (div.length == 0) {
+								div = $('<div>', {class:'face'})
+							}
+							div.css({
+								width: face.rect.width*widthRatio,
+								height: face.rect.height*heightRatio,
+								marginTop: face.rect.top*heightRatio,
+								marginLeft: face.rect.left*widthRatio
+							}).appendTo(overlay)
+							if (face.matched) {
+								div.text(face.name)
+							}
+						}
+					},
+					complete: function(){
+						setTimeout(snapshot, snapshotInterval);
+					}
+				})
+			}
+
+			function onLocalMediaStream(localMediaStream) {
+				video.src = window.URL.createObjectURL(localMediaStream);
+				setTimeout(snapshot, snapshotInterval);
+			}
+
+			var handleError = function(e){
+				alert("failed to access webcam: "+e);
+			}.bind(this)
+			var mediaOptions = {
+				video: {
+					mandatory: {
+						// maxWidth: 400,
+						// maxHeight: 300,
+					}
+				}
+			}
+			if (navigator.getUserMedia) {
+				navigator.getUserMedia(mediaOptions, onLocalMediaStream, handleError);
+			} else if (navigator.webkitGetUserMedia) {
+				navigator.webkitGetUserMedia(mediaOptions, onLocalMediaStream, handleError);
+			} else if (navigator.mozGetUserMedia) {
+				navigator.mozGetUserMedia(mediaOptions, onLocalMediaStream, handleError);
+			} else if (navigator.msGetUserMedia) {
+				navigator.msGetUserMedia(mediaOptions, onLocalMediaStream, handleError);
+			}
+
+			function getBase64Snapshot() {
+				canvas.width = video.videoWidth;
+				canvas.height = video.videoHeight;
+				var ctx = canvas.getContext('2d');
+				ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+				var dataURL = canvas.toDataURL("image/jpeg")
+				return dataURL.slice("data:image/jpeg;base64,".length)
+			}
+
+			$(window).resize(function(){
+				actualVideoWidth = $('#screen').width()
+				actualVideoHeight = $('#screen').height()
+			})
+
+		})
+	</script>
+</body>
+</html>
