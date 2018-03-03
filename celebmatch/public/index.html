@@ -6,12 +6,34 @@
 		html, body {
 			margin: 0;
 			padding: 0;
+			background-color: black;
 		}
 
 		#screen {
 			width: 100%;
 			height: 100%;
 			position: absolute;
+		}
+
+		#logos {
+			top: 0;
+			position: absolute;
+			z-index: 1000;
+			width: 100%;
+			opacity: 0.9;
+		}
+
+		#logos div {
+			padding: 20px;
+			background-color: white;
+		}
+
+		#logos .machine.box.logo {
+			width: 200px;
+		}
+		#logos .cloudian.logo {
+			width: 200px;
+			float: right;
 		}
 
 		#overlay {
@@ -34,6 +56,12 @@
 	</style>
 </head>
 <body>
+	<div id='logos'>
+		<div>
+			<img class='machine box logo' src='machinebox.png'>
+			<img class='cloudian logo' src='cloudian.jpeg'>
+		</div>
+	</div>
 	<div id='overlay'></div>
 	<div id='pool'></div>
 	<video id='screen' autoplay></video>
@@ -67,28 +95,26 @@
 
 				$.ajax({
 					method: 'post',
-					url: 'http://localhost:8080/facebox/check',
+					url: 'http://localhost:8080/facebox/similar',
 					contentType: 'application/json;charset=UTF-8',
 					data: JSON.stringify({"base64":getBase64Snapshot()}),
 					success: function(results){
 						$('.face').text('').appendTo(pool)
 						if (!results.success) { return }
-						for (var i in results.faces) {
-							var face = results.faces[i]
-							var div = getDivFromPool()
-							if (div.length == 0) {
-								div = $('<div>', {class:'face'})
-							}
-							div.css({
-								width: face.rect.width*widthRatio,
-								height: face.rect.height*heightRatio,
-								marginTop: face.rect.top*heightRatio,
-								marginLeft: face.rect.left*widthRatio
-							}).appendTo(overlay)
-							if (face.matched) {
-								div.text(face.name)
-							}
-						}
+						console.info(results)
+						// for (var i in results.faces) {
+						// 	var face = results.faces[i]
+						// 	var div = getDivFromPool()
+						// 	if (div.length == 0) {
+						// 		div = $('<div>', {class:'face'})
+						// 	}
+						// 	div.css({
+						// 		width: face.rect.width*widthRatio,
+						// 		height: face.rect.height*heightRatio,
+						// 		marginTop: face.rect.top*heightRatio,
+						// 		marginLeft: face.rect.left*widthRatio
+						// 	}).appendTo(overlay)
+						// }
 					},
 					complete: function(){
 						setTimeout(snapshot, snapshotInterval);
