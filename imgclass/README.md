@@ -2,6 +2,8 @@
 
 Image classification tool for Classificationbox.
 
+* Read the blog post: [Build a machine learning image classifier from photos on your hard drive very quickly](https://blog.machinebox.io/how-anyone-can-build-a-machine-learning-image-classifier-from-photos-on-your-hard-drive-very-5c20c6f2764f)
+
 ## Usage
 
 1. Prepare teaching images
