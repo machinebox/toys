@@ -18,6 +18,7 @@ import (
 	"github.com/machinebox/sdk-go/boxutil"
 	"github.com/machinebox/sdk-go/classificationbox"
 	"github.com/pkg/errors"
+	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
 func main() {
@@ -110,13 +111,14 @@ func run(ctx context.Context) error {
 
 func teach(ctx context.Context, cb *classificationbox.Client, modelID string, images []imageExample) error {
 	fmt.Print("teaching: ")
+	bar := pb.StartNew(len(images))
 	for _, image := range images {
 		if err := teachImage(ctx, cb, modelID, image); err != nil {
 			return errors.Wrap(err, image.path)
 		}
-		fmt.Print(".")
+		bar.Increment()
 	}
-	fmt.Println()
+	bar.FinishPrint("Teaching complete")
 	return nil
 }
 
@@ -138,7 +140,8 @@ func teachImage(ctx context.Context, cb *classificationbox.Client, modelID strin
 }
 
 func validate(ctx context.Context, cb *classificationbox.Client, modelID string, images []imageExample) error {
-	fmt.Print("validating: ")
+	fmt.Print("validating...")
+	bar := pb.StartNew(len(images))
 	var correct, incorrect, errors int
 	for _, image := range images {
 		predictedClass, err := predictImage(ctx, cb, modelID, image)
@@ -154,8 +157,9 @@ func validate(ctx context.Context, cb *classificationbox.Client, modelID string,
 			incorrect++
 			fmt.Print("𐄂")
 		}
+		bar.Increment()
 	}
-	fmt.Println()
+	bar.FinishPrint("Validation complete")
 	fmt.Println()
 	fmt.Printf("Correct:    %d\n", correct)
 	fmt.Printf("Incorrect:  %d\n", incorrect)
