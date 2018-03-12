@@ -3,16 +3,21 @@
 <head>
 	<title>Celeb match by Machine Box</title>
 	<style>
+
 		html, body {
 			margin: 0;
 			padding: 0;
 			background-color: black;
+			font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 		}
 
-		#screen {
+		video#screen {
 			width: 100%;
 			height: 100%;
 			position: absolute;
+
+			-webkit-transform: scaleX(-1);
+			transform: scaleX(-1);
 		}
 
 		#logos {
@@ -35,6 +40,15 @@
 			width: 200px;
 			float: right;
 		}
+		#logos h1 {
+			padding-top: 23px;
+			top: 0;
+			margin: auto;
+			position: absolute;
+			text-align: center;
+			width: 100%;
+			text-transform: uppercase;
+		}
 
 		#overlay {
 			width: 100%;
@@ -42,12 +56,29 @@
 			position: absolute;
 		}
 
+		#overlay .number {
+			position: absolute;
+			margin: auto;
+			width: 100%;
+			text-align: center;
+			padding-top: 300px;
+			font-size: 300px;
+			color: white;
+			text-shadow: 1px 1px black;
+			z-index: 1001;
+			font-family: 'Courier New', Courier, monospace
+		}
+
 		#overlay .face {
 			position: absolute;
-			border-radius: 50%;
-			border: 10px black solid;
 			z-index: 1000;
-			text-align: center;
+			opacity: 0.95;
+		}
+
+		#overlay .face img {
+			width: 100%;
+			height: 100%;
+			border-radius: 50%;
 		}
 
 		#pool {
@@ -59,11 +90,11 @@
 	<div id='logos'>
 		<div>
 			<img class='machine box logo' src='machinebox.png'>
+			<h1>Who do you look like?</h1>
 			<img class='cloudian logo' src='cloudian.jpeg'>
 		</div>
 	</div>
 	<div id='overlay'></div>
-	<div id='pool'></div>
 	<video id='screen' autoplay></video>
 	<script src="http://code.jquery.com/jquery-3.3.1.min.js"
 		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -72,59 +103,94 @@
 
 		$(function(){
 
-			var snapshotInterval = 500
-			var video = $('#screen')[0]
-			var actualVideoWidth = $('#screen').width()
-			var actualVideoHeight = $('#screen').height()
-			var pool = $('#pool')
+			var $video = $('video')
+			var video = $video[0]
+			var actualVideoWidth = $video.width()
+			var actualVideoHeight = $video.height()
 			var canvas = document.createElement('canvas')
 			var overlay = $('#overlay')
+			var xRatio = 1
+			var yRatio = 1
 
-			function getDivFromPool() {
-				return pool.find('.face').first()
+			function showNumber(n) {
+				console.info(n)
+				var no = overlay.find('.number')
+				if (no.length === 0) {
+					$("<div>", {class:'number'}).appendTo(overlay)
+				}
+				if (!n) {
+					no.remove()
+					return
+				}
+				no.text(n)
+			}
+
+			function scheduleNextSnapshot() {
+				window.setTimeout(function(){
+					overlay.find('.face').fadeOut(function(){
+						$(this).remove()
+					})
+				}, 6000)
+				window.setTimeout(function(){
+					showNumber(4)
+				}, 6000)
+				window.setTimeout(function(){
+					showNumber(3)
+				}, 7000)
+				window.setTimeout(function(){
+					showNumber(2)
+				}, 8000)
+				window.setTimeout(function(){
+					showNumber(1)
+					snapshot()
+				}, 9000)
 			}
 
 			function snapshot() {
-
-				var widthRatio = actualVideoWidth/video.videoWidth
-				var heightRatio = actualVideoHeight/video.videoHeight
-				if (widthRatio === Infinity) { 
-					setTimeout(snapshot, snapshotInterval);
+				xRatio = actualVideoWidth/video.videoWidth
+				yRatio = actualVideoHeight/video.videoHeight
+				if (xRatio === Infinity) { 
+					scheduleNextSnapshot()
 					return
 				}
 
 				$.ajax({
 					method: 'post',
-					url: 'http://localhost:8080/facebox/similar',
+					url: 'http://localhost:8080/facebox/similars',
 					contentType: 'application/json;charset=UTF-8',
 					data: JSON.stringify({"base64":getBase64Snapshot()}),
 					success: function(results){
-						$('.face').text('').appendTo(pool)
 						if (!results.success) { return }
-						console.info(results)
-						// for (var i in results.faces) {
-						// 	var face = results.faces[i]
-						// 	var div = getDivFromPool()
-						// 	if (div.length == 0) {
-						// 		div = $('<div>', {class:'face'})
-						// 	}
-						// 	div.css({
-						// 		width: face.rect.width*widthRatio,
-						// 		height: face.rect.height*heightRatio,
-						// 		marginTop: face.rect.top*heightRatio,
-						// 		marginLeft: face.rect.left*widthRatio
-						// 	}).appendTo(overlay)
-						// }
+						for (var i in results.faces) {
+							var face = results.faces[i]
+							if (face.similar_faces.length === 0) { continue }
+							item = $("<div>", {class:'face'}).css({
+								top: (face.rect.top*xRatio)-50,
+								left: face.rect.left*yRatio,
+								width: face.rect.width*xRatio,
+								height: face.rect.height*yRatio,
+								marginTop: -2000
+							}).appendTo(overlay)
+							var similarFace = face.similar_faces[0]
+							var path = "/images/imdb_crop/" + similarFace.id.substr(0, 2) + "/" + similarFace.id.substr(3)
+							item.append(
+								$("<img>", {src:path})
+							)
+							item.delay(200 * i).animate({
+								marginTop: 0
+							})
+						}
 					},
 					complete: function(){
-						setTimeout(snapshot, snapshotInterval);
+						showNumber(null)
+						scheduleNextSnapshot()
 					}
 				})
 			}
 
 			function onLocalMediaStream(localMediaStream) {
 				video.src = window.URL.createObjectURL(localMediaStream);
-				setTimeout(snapshot, snapshotInterval);
+				scheduleNextSnapshot()
 			}
 
 			var handleError = function(e){
@@ -152,14 +218,20 @@
 				canvas.width = video.videoWidth;
 				canvas.height = video.videoHeight;
 				var ctx = canvas.getContext('2d');
+				ctx.translate(canvas.width, 0);
+				ctx.scale(-1, 1);
 				ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 				var dataURL = canvas.toDataURL("image/jpeg")
 				return dataURL.slice("data:image/jpeg;base64,".length)
 			}
 
+			function distance(startX, startY, endX, endY) {
+				return Math.sqrt(Math.pow(endX-startX, 2) + Math.pow(endY-startY, 2))
+			}
+
 			$(window).resize(function(){
-				actualVideoWidth = $('#screen').width()
-				actualVideoHeight = $('#screen').height()
+				actualVideoWidth = $video.width()
+				actualVideoHeight = $video.height()
 			})
 
 		})
