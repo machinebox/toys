@@ -184,7 +184,7 @@
 								marginTop: -2000
 							}).appendTo(overlay)
 							var similarFace = face.similar_faces[0]
-							var path = "/images/imdb_crop/" + similarFace.id.substr(0, 2) + "/" + similarFace.id.substr(3)
+							var path = "/images/" + similarFace.id
 							item.append(
 								$("<img>", {src:path})
 							)
