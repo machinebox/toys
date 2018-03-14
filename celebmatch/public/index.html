@@ -90,6 +90,13 @@
 			border-radius: 50%;
 		}
 
+		#overlay .face .name {
+			text-align: center;
+			font-size: 40px;
+			color: white;
+			text-shadow: 1px 1px black;
+		}
+
 		#pool {
 			display: none;
 		}
@@ -188,6 +195,11 @@
 							item.append(
 								$("<img>", {src:path})
 							)
+							if (similarFace.name && similarFace.name.length > 0) {
+								item.append(
+									$("<div>", {class:'name'}).text(similarFace.name)
+								)
+							}
 							item.delay(200 * i).animate({
 								marginTop: 0
 							})
