@@ -151,6 +151,9 @@
 
 			function scheduleNextSnapshot() {
 				window.setTimeout(function(){
+					overlay.find('.face').fadeOut(function(){
+						$(this).remove()
+					})
 					showNumber(3)
 				}, 6000)
 				window.setTimeout(function(){
@@ -158,9 +161,6 @@
 				}, 7000)
 				window.setTimeout(function(){
 					showNumber(1)
-					overlay.find('.face').fadeOut(function(){
-						$(this).remove()
-					})
 				}, 8000)
 				window.setTimeout(function(){
 					showNumber("...")
