@@ -132,10 +132,15 @@
 			var yRatio = 1
 
 			function showNumber(n) {
-				console.info(n)
 				var no = overlay.find('.number')
 				if (no.length === 0) {
-					$("<div>", {class:'number'}).appendTo(overlay)
+					no = $("<div>", {class:'number'}).appendTo(overlay)
+				}
+				if (n === "...") {
+					no.text("").append(
+						$("<img>", {src:'/loader.gif'})
+					)
+					return
 				}
 				if (!n) {
 					no.remove()
@@ -146,14 +151,6 @@
 
 			function scheduleNextSnapshot() {
 				window.setTimeout(function(){
-					overlay.find('.face').fadeOut(function(){
-						$(this).remove()
-					})
-				}, 6000)
-				window.setTimeout(function(){
-					showNumber(4)
-				}, 5000)
-				window.setTimeout(function(){
 					showNumber(3)
 				}, 6000)
 				window.setTimeout(function(){
@@ -161,9 +158,12 @@
 				}, 7000)
 				window.setTimeout(function(){
 					showNumber(1)
+					overlay.find('.face').fadeOut(function(){
+						$(this).remove()
+					})
 				}, 8000)
 				window.setTimeout(function(){
-					showNumber(null)
+					showNumber("...")
 					snapshot()
 				}, 9000)
 			}
@@ -198,11 +198,12 @@
 							item.append(
 								$("<img>", {src:path})
 							)
-							if (similarFace.name && similarFace.name.length > 0) {
-								item.append(
-									$("<div>", {class:'name'}).text(similarFace.name)
-								)
+							if (!similarFace.name || similarFace.name.length == 0) {
+								similarFace.name = "Unknown"
 							}
+							item.append(
+								$("<div>", {class:'name'}).text(similarFace.name)
+							)
 							item.delay(200 * i).animate({
 								marginTop: 0
 							})
