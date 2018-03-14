@@ -75,7 +75,8 @@
 			color: white;
 			text-shadow: 1px 1px black;
 			z-index: 1001;
-			font-family: 'Courier New', Courier, monospace
+			font-family: 'Courier New', Courier, monospace;
+			letter-spacing: 0.1em;
 		}
 
 		#overlay .face {
@@ -151,15 +152,18 @@
 				}, 6000)
 				window.setTimeout(function(){
 					showNumber(4)
-				}, 6000)
+				}, 5000)
 				window.setTimeout(function(){
 					showNumber(3)
-				}, 7000)
+				}, 6000)
 				window.setTimeout(function(){
 					showNumber(2)
-				}, 8000)
+				}, 7000)
 				window.setTimeout(function(){
 					showNumber(1)
+				}, 8000)
+				window.setTimeout(function(){
+					showNumber(null)
 					snapshot()
 				}, 9000)
 			}
@@ -171,7 +175,7 @@
 					scheduleNextSnapshot()
 					return
 				}
-
+				$("#white-overlay").animate({opacity: 1}, 100).animate({opacity:0}, 100)
 				$.ajax({
 					method: 'post',
 					url: 'http://localhost:8080/facebox/similars',
@@ -179,7 +183,6 @@
 					data: JSON.stringify({"base64":getBase64Snapshot()}),
 					success: function(results){
 						if (!results.success) { return }
-						$("#white-overlay").animate({opacity: 1}, 100).animate({opacity:0}, 100)
 						for (var i in results.faces) {
 							var face = results.faces[i]
 							if (face.similar_faces.length === 0) { continue }
