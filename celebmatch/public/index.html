@@ -198,12 +198,12 @@
 							item.append(
 								$("<img>", {src:path})
 							)
-							// if (!similarFace.name || similarFace.name.length == 0) {
-							// 	similarFace.name = "Unknown"
-							// }
-							// item.append(
-							// 	$("<div>", {class:'name'}).text(similarFace.name)
-							// )
+							if (!similarFace.name || similarFace.name.length == 0) {
+								similarFace.name = "Unknown"
+							}
+							item.append(
+								$("<div>", {class:'name'}).text(similarFace.name)
+							)
 							item.delay(200 * i).animate({
 								marginTop: 0
 							})
