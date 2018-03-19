@@ -21,6 +21,9 @@ go get
 echo "Downloading dataset..."
 wget https://storage.googleapis.com/machinebox_datasets/faces/imdb/IMDB_labeled.machinebox.facebox
 
+echo "Downloading "
+wget https://storage.googleapis.com/machinebox_datasets/faces/imdb/imdb_crop.tar
+
 echo "Installing Facebox..."
 docker pull machinebox/facebox:latest
 
