@@ -114,7 +114,8 @@ func teach(ctx context.Context, cb *classificationbox.Client, modelID string, im
 	bar := pb.StartNew(len(images))
 	for _, image := range images {
 		if err := teachImage(ctx, cb, modelID, image); err != nil {
-			return errors.Wrap(err, image.path)
+			fmt.Printf("Error teaching: %s", err);
+			fmt.Println("Pressing onward...");
 		}
 		bar.Increment()
 	}
