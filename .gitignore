@@ -15,3 +15,6 @@
 
 celebmatch/public/images/
 
+*/.DS_Store
+celebmatch/.DS_Store
+celebmatch/public/.DS_Store
