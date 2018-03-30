@@ -4,6 +4,11 @@
 
 Tools, scripts, toys, and utilities for Machine Box
 
+## Classification
+
+* [textclass: Text file classification with Classificationbox](textclass)
+* [imgclass: Image file classification with Classificationbox](imgclass)
+
 ## Image classification
 
 * [imgclass: Image file classification with Classificationbox](imgclass)
@@ -12,4 +17,5 @@ Tools, scripts, toys, and utilities for Machine Box
 
 ## Facial recognition
 
+* [anonproxy: Image proxy server to anonymise images](anonproxy)
 * [faceverify.js: JavaScript code that hides information if an unauthorized person is looking at it (using the webcam)](faceverify)
