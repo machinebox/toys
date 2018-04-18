@@ -1,0 +1,209 @@
+<html>
+<head>
+	<title>Suggestionbox demo</title>
+	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css'>
+</head>
+<body>
+	<div class='container'>
+		<br><br><br>
+		<div class='content'>
+			<div class='columns'>
+				<div class='column'>
+					<h1>Suggestionbox demo</h1>
+					<p>
+						This page uses Suggestionbox to order the genres based on
+						Machine Learning predictions.
+					</p>
+					<p>
+						The user data is represented in a hard-coded object, which you should make dynamic
+						in your real case:
+					</p>
+					<pre><code>var testUser = {
+	age: 30,
+	city: "London",
+	interests: ['music', 'movies', 'politics']
+}</code></pre>
+					<p>
+						This object is then turned into a Suggestionbox prediction request object,
+						and sent via AJAX to Suggestionbox:
+					</p>
+					<pre><code>var predictRequest = {
+	"inputs": [
+		{"key": "user_age", "type": "number", "value": ""+testUser.age},
+		{"key": "user_interests", "type": "list", "value": testUser.interests.join(',')},
+		{"key": "user_location", "type": "keyword", "value": testUser.city}
+	]
+}</code></pre>
+					<p>
+						The response from Suggestionbox is used to adjust the order of the
+						genres.
+					</p>
+					<pre><code>{
+	"success": true,
+	"choices": [
+		{
+			"id": "documentary",
+			"score": 0.76,
+			"reward_id": "5ad7386376f653490d7b4cfe7c77cfef"
+		},
+		{
+			"id": "comedy",
+			"score": 0.06,
+			"reward_id": "5ad738634fd99903deb940813d388897"
+		},
+		{
+			"id": "drama",
+			"score": 0.06,
+			"reward_id": "5ad73863747a47aded895f2c1e577277"
+		},
+		{
+			"id": "horror",
+			"score": 0.06,
+			"reward_id": "5ad73863ead2c83ce8827ad275caca4f"
+		},
+		{
+			"id": "kids",
+			"score": 0.06,
+			"reward_id": "5ad7386306e5e98f8a9b059618844690"
+		}
+	]
+}</code></pre>
+					<p>
+						The <code>reward_id</code> values are used to reward the model when
+						the user clicks on the corresponding genre.
+					</p>
+					<hr>
+
+				</div>
+				<div class='column'>
+					<h2>Genres</h2>
+					<ul id='choices'>
+						<li id='choice-horror'>
+							<a href='javascript:reward("horror")'>Horror</a>
+						</li>
+						<li id='choice-comedy'>
+							<a href='javascript:reward("comedy")'>Comedy</a>
+						</li>
+						<li id='choice-drama'>
+							<a href='javascript:reward("drama")'>Drama</a>
+						</li>
+						<li id='choice-documentary'>
+							<a href='javascript:reward("documentary")'>Documentary</a>
+						</li>
+						<li id='choice-kids'>
+							<a href='javascript:reward("kids")'>Kids</a>
+						</li>
+					</ul>
+					<p>
+						Refresh the page to make new predictions.
+					</p>
+					<hr>
+					<p>
+						To get this page to work, make sure you are <a href='https://machinebox.io/account'>running Suggestionbox</a>.
+					</p>
+					<p>
+						Create a model in the Suggestionbox console at
+						<a href='http://localhost:8080/console'>http://localhost:8080/console</a>.
+					</p>
+				</div>
+			</div>	
+		</div>
+	</div>
+	<script>
+	
+		// This object should be different depending on which user
+		// is looking at the page.
+		// It's hard coded here, for simplicity.
+		var testUser = {
+			age: 30,
+			city: "London",
+			interests: ['music', 'movies', 'politics']
+		}
+
+		var options = {
+			suggestionboxAddr: "http://localhost:8080/suggestionbox",
+			modelID: "genres2"
+		}
+
+		// rewardIDs will hold the reward IDs for each choice, so we know
+		// how to reward the model.
+		var rewardIDs = {}
+
+		function makePrediction() {
+			// create a prediction request that includes some facts about
+			// the user.
+			var predictRequest = {
+				"inputs": [
+					{"key": "user_age", "type": "number", "value": ""+testUser.age},
+					{"key": "user_interests", "type": "list", "value": testUser.interests.join(',')},
+					{"key": "user_location", "type": "keyword", "value": testUser.city}
+				]
+			}
+			var url = options.suggestionboxAddr+'/models/'+options.modelID+'/predict'
+			makeRequest('post', url, predictRequest, function(status, response, xhr) {
+				if (status !== 200 || !response.success) {
+					console.warn('Failed', status, response, xhr)
+					return
+				}
+				// order the elements based on the response from
+				// the Machine Learning model
+				var choicesEl = document.getElementById('choices')
+				for (var choice in response.choices) {
+					var choice = response.choices[choice]
+					// keep track of this reward ID
+					rewardIDs[choice.id] = choice.reward_id
+					var choiceEl = document.getElementById('choice-'+choice.id)
+					choicesEl.appendChild(choiceEl)
+				}
+			})
+		}
+
+		// reward sends a reward for the given choice ID.
+		// Reward IDs are kept in rewardIDs.
+		function reward(id) {
+			var rewardRequest = {
+				reward_id: rewardIDs[id],
+				value: 1
+			}
+			var url = options.suggestionboxAddr+'/models/'+options.modelID+'/rewards'
+			makeRequest('post', url, rewardRequest, function(){
+				alert('Reward sent - TODO: Redirect user to page /genres/' + id)
+			})
+		}
+
+
+
+		/*
+		 * CAUTION: Boring boilerplate stuff below, not as interesting.
+		 */
+
+		// onPageLoad is called when the page has loaded.
+		function onPageLoad() {
+			makePrediction()
+		}
+
+		if (window.addEventListener){
+			window.addEventListener('load', onPageLoad)
+		} else {
+			window.attachEvent('onload', onPageLoad)
+		}
+
+		// makeRequest is a simple JSON AJAX wrapper.
+		function makeRequest(method, url, data, callback) {
+			var xhr = new XMLHttpRequest()
+			xhr.open(method, url, true)
+			xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+			xhr.setRequestHeader('Accept', 'application/json; charset=utf-8')
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == XMLHttpRequest.DONE) {
+					var responseObject = JSON.parse(xhr.response)
+					callback(xhr.status, responseObject, xhr)
+					return
+    			}
+			}
+			xhr.send(JSON.stringify(data))
+		}
+	
+	</script>
+</body>
+</html>
