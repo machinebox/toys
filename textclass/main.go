@@ -47,6 +47,7 @@ func run(ctx context.Context) error {
 		cbAddr     = flag.String("cb", "http://localhost:8080", "Classificationbox address")
 		src        = flag.String("src", ".", "source of dataset")
 		teachratio = flag.Float64("teachratio", 0.8, "ratio of items to teach vs use for validation")
+		passes     = flag.Int("passes", 1, "number of times to teach the examples")
 	)
 	flag.Parse()
 	cb := classificationbox.New(*cbAddr)
@@ -96,8 +97,11 @@ func run(ctx context.Context) error {
 		return errors.New("aborted")
 	}
 	teachitems, validateitems := split(randomSource, teachitemsCount, items)
-	if err := teach(ctx, cb, model.ID, teachitems); err != nil {
-		return errors.Wrap(err, "teaching")
+	for i := 0; i < *passes; i++ {
+		fmt.Printf("  pass %d of %d...\n", i+1, *passes)
+		if err := teach(ctx, cb, model.ID, teachitems); err != nil {
+			return errors.Wrap(err, "teaching")
+		}
 	}
 	fmt.Println("waiting for teaching to complete...")
 	fmt.Println()
