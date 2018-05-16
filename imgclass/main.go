@@ -48,6 +48,7 @@ func run(ctx context.Context) error {
 		cbAddr     = flag.String("cb", "http://localhost:8080", "Classificationbox address")
 		src        = flag.String("src", ".", "source of dataset")
 		teachratio = flag.Float64("teachratio", 0.8, "ratio of images to teach vs use for validation")
+		passes     = flag.Int("passes", 1, "number of times to teach the examples")
 	)
 	flag.Parse()
 	cb := classificationbox.New(*cbAddr)
@@ -97,8 +98,11 @@ func run(ctx context.Context) error {
 		return errors.New("aborted")
 	}
 	teachImages, validateImages := split(randomSource, teachImagesCount, images)
-	if err := teach(ctx, cb, model.ID, teachImages); err != nil {
-		return errors.Wrap(err, "teaching")
+	for i := 0; i < *passes; i++ {
+		fmt.Printf("  pass %d of %d...\n", i+1, *passes)
+		if err := teach(ctx, cb, model.ID, teachImages); err != nil {
+			return errors.Wrap(err, "teaching")
+		}
 	}
 	fmt.Println("waiting for teaching to complete...")
 	fmt.Println()
@@ -114,8 +118,8 @@ func teach(ctx context.Context, cb *classificationbox.Client, modelID string, im
 	bar := pb.StartNew(len(images))
 	for _, image := range images {
 		if err := teachImage(ctx, cb, modelID, image); err != nil {
-			fmt.Printf("Error teaching: %s", err);
-			fmt.Println("Pressing onward...");
+			fmt.Printf("Error teaching: %s", err)
+			fmt.Println("Pressing onward...")
 		}
 		bar.Increment()
 	}
