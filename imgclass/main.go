@@ -152,15 +152,15 @@ func validate(ctx context.Context, cb *classificationbox.Client, modelID string,
 		predictedClass, err := predictImage(ctx, cb, modelID, image)
 		if err != nil {
 			errors++
-			fmt.Print("!")
+			//fmt.Print("!")
 			continue
 		}
 		if predictedClass == image.class {
 			correct++
-			fmt.Print("✓")
+			//fmt.Print("✓")
 		} else {
 			incorrect++
-			fmt.Print("𐄂")
+			//fmt.Print("𐄂")
 		}
 		bar.Increment()
 	}
