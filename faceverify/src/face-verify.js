@@ -51,20 +51,12 @@ machinebox.FaceVerify = class {
 				}
 			}
 		}
-		if (navigator.getUserMedia) {
-			navigator.getUserMedia(mediaOptions, this.onLocalMediaStream.bind(this), handleError);
-		} else if (navigator.webkitGetUserMedia) {
-			navigator.webkitGetUserMedia(mediaOptions, this.onLocalMediaStream.bind(this), handleError);
-		} else if (navigator.mozGetUserMedia) {
-			navigator.mozGetUserMedia(mediaOptions, this.onLocalMediaStream.bind(this), handleError);
-		} else if (navigator.msGetUserMedia) {
-			navigator.msGetUserMedia(mediaOptions, this.onLocalMediaStream.bind(this), handleError);
-		}
-	}
 
-	onLocalMediaStream(localMediaStream) {
-		this.video.src = window.URL.createObjectURL(localMediaStream);
-		setTimeout(this.snapshot.bind(this), this.options.snapshotInterval);
+		navigator.mediaDevices.getUserMedia(mediaOptions).then(function(stream) {
+			console.info(stream)
+			this.video.srcObject = stream
+			setTimeout(this.snapshot.bind(this), this.options.snapshotInterval);
+		}.bind(this))
 	}
 
 	getBase64Snapshot() {
